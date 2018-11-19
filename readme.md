@@ -5,7 +5,7 @@ This plugin is to be used as a JSX plugin for [SVGR](https://github.com/smooth-c
 Add the package by adding `"babel-plugin-svgr-fill-replace": "github:Exictos-DCS/babel-plugin-svgr-fill-replace",` to your project dependencies.  
 
 In the *svgr* config file add the following:
-````json
+````javascript
 {
   jsx: {
     babelConfig: {
