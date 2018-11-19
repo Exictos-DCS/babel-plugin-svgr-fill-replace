@@ -1,0 +1,16 @@
+{
+  "name": "babel-plugin-svgr-fill-replace",
+  "description": "Replaces fill value with id",
+  "version": "1.0.0",
+  "main": "index.js",
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "babel-plugin"
+  ],
+  "engines": {
+    "node": ">=8"
+  },
+  "license": "MIT"
+}
