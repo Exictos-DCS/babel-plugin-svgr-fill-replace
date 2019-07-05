@@ -1,50 +1,104 @@
+const svgElements = {
+  path: "Path",
+  g: "G",
+  rect: "Rect",
+  circle: "Circle",
+  ellipse: "Ellipse",
+  text: "Text",
+  defs: "Defs",
+  clipPath: "ClipPath",
+  polygon: "Polygon",
+  polyline: "Polyline",
+  line: "Line"
+};
+
+const getElementId = path => {
+  return path
+    .get("openingElement.attributes")
+    .find(node => node.get("name").node.name === "id").node.value;
+};
+
+const removeElementId = path => {
+  if (!(path.get("openingElement.attributes").length === 0)) {
+    path
+      .get("openingElement.attributes")
+      .find(node => (node.name = "id"))
+      .remove();
+  }
+};
+
 const plugin = ({ types: t }) => {
   const replaceElement = path => {
-    const { name } = path.node.openingElement.name
+    const { name } = path.node.openingElement.name;
 
-    if(name === 'path') {
-      // Gets the element id
-      const { value } = path.get('openingElement.attributes.0').node.value
+    if (name === "svg") {
+      path.replaceWith(
+        t.jsxElement(
+          t.jsxOpeningElement(t.jsxIdentifier("Fragment"), []),
+          t.jsxClosingElement(t.jsxIdentifier("Fragment")),
+          path.get("openingElement").parent.children || []
+        )
+      );
+    }
 
-      const fill = path.get('openingElement.attributes.2')
+    if (Object.keys(svgElements).includes(name)) {
+      path
+        .get("openingElement.name")
+        .replaceWith(t.jsxIdentifier(svgElements[name]));
 
-      if (fill) {
-        // Replaces fill with id value
-        fill.replaceWith(t.jsxAttribute(
-          t.jsxIdentifier('fill'),
-          t.StringLiteral(value),
-        ))
+      if (path.node.closingElement !== null) {
+        path
+          .get("closingElement.name")
+          .replaceWith(t.jsxIdentifier(svgElements[name]));
       }
     }
 
-    // Remove id
-    path.get('openingElement.attributes.0').remove()
-  }
+    if (name === "path") {
+      // Gets the element id
+      const { value } = getElementId(path);
+
+      const fill = path
+        .get("openingElement.attributes")
+        .find(node => node.get("name").node.name === "fill");
+
+      if (fill) {
+        // Replaces fill with id value
+        fill.replaceWith(
+          t.jsxAttribute(t.jsxIdentifier("fill"), t.StringLiteral(value))
+        );
+
+        // Remove id
+        removeElementId(path);
+      }
+    } else {
+      removeElementId(path);
+    }
+  };
 
   const svgElementVisitor = {
     JSXElement(path, state) {
-      if (!path.get('openingElement.name').isJSXIdentifier({ name: 'svg' })) {
-        return
+      if (!path.get("openingElement.name").isJSXIdentifier({ name: "svg" })) {
+        return;
       }
 
-      replaceElement(path, state)
-      path.traverse(jsxElementVisitor, state)
-    },
-  }
+      replaceElement(path, state);
+      path.traverse(jsxElementVisitor, state);
+    }
+  };
 
   const jsxElementVisitor = {
     JSXElement(path, state) {
-      replaceElement(path, state)
-    },
-  }
+      replaceElement(path, state);
+    }
+  };
 
   return {
     visitor: {
       Program(path, state) {
-        path.traverse(svgElementVisitor, state)
-      },
-    },
-  }
-}
+        path.traverse(svgElementVisitor, state);
+      }
+    }
+  };
+};
 
-module.exports = plugin
+module.exports = plugin;
