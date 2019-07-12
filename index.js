@@ -13,9 +13,13 @@ const svgElements = {
 };
 
 const getElementId = path => {
-  return path
+  const id = path
     .get("openingElement.attributes")
-    .find(node => node.get("name").node.name === "id").node.value;
+    .find(node => node.get("name").node.name === "id");
+
+  if (id) return id.node.value;
+
+  return {};
 };
 
 const removeElementId = path => {
@@ -61,7 +65,7 @@ const plugin = ({ types: t }) => {
         .get("openingElement.attributes")
         .find(node => node.get("name").node.name === "fill");
 
-      if (fill) {
+      if (fill && value) {
         // Replaces fill with id value
         fill.replaceWith(
           t.jsxAttribute(t.jsxIdentifier("fill"), t.StringLiteral(value))
